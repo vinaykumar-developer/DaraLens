@@ -105,9 +105,17 @@ if uploaded_file is not None:
     numeric_df = df.select_dtypes(include="number")
     if numeric_df.shape[1] >= 2:
         st.subheader("Correlation Heatmap")
-        fig, ax = plt.subplots(figsize=(6, 4))
-        sns.heatmap(numeric_df.corr(numeric_only=True), annot=True, fmt=".2f", cmap="coolwarm", ax=ax)
-        st.pyplot(fig)
+        try:
+            fig, ax = plt.subplots(figsize=(6, 4))
+            sns.heatmap(numeric_df.corr(numeric_only=True), annot=True, fmt=".2f", cmap="coolwarm", ax=ax)
+            st.pyplot(fig)
+        finally:
+            # Always close the figure, even if rendering fails — matplotlib
+            # keeps every unclosed figure in memory, and on Streamlit's app
+            # reruns (which happen on every interaction) this leaks memory
+            # and can eventually crash the app, especially on the free
+            # hosting tier's limited RAM.
+            plt.close(fig)
 
 else:
     st.info("👆 Upload a CSV file to get started.")
